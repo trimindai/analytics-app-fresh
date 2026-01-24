@@ -1,9 +1,16 @@
 'use client';
 
-import { FileText, Download, Calendar, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Download, Calendar, Filter, Plus, Check } from 'lucide-react';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { useTranslation } from '@/lib/i18n/translations';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const mockReports = [
   {
@@ -32,9 +39,41 @@ const mockReports = [
   },
 ];
 
+const dateRanges = [
+  { value: 'today', label: 'Today', labelAr: 'اليوم' },
+  { value: '7d', label: 'Last 7 days', labelAr: 'آخر 7 أيام' },
+  { value: '30d', label: 'Last 30 days', labelAr: 'آخر 30 يوم' },
+  { value: '90d', label: 'Last 90 days', labelAr: 'آخر 90 يوم' },
+];
+
+const reportTypes = [
+  { value: 'all', label: 'All Types', labelAr: 'جميع الأنواع' },
+  { value: 'pdf', label: 'PDF', labelAr: 'PDF' },
+  { value: 'excel', label: 'Excel', labelAr: 'Excel' },
+];
+
 export default function ReportsPage() {
   const { language } = useAppStore();
   const { t } = useTranslation(language);
+  const [selectedDateRange, setSelectedDateRange] = useState('30d');
+  const [selectedType, setSelectedType] = useState('all');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownload = (reportId: string, reportName: string) => {
+    setDownloadingId(reportId);
+    // Simulate download
+    setTimeout(() => {
+      setDownloadingId(null);
+      alert(`${language === 'ar' ? 'تم تحميل التقرير:' : 'Report downloaded:'} ${reportName}`);
+    }, 1000);
+  };
+
+  const handleCreateReport = () => {
+    alert(language === 'ar' ? 'سيتم فتح معالج إنشاء التقرير' : 'Report creation wizard will open');
+  };
+
+  const currentDateRange = dateRanges.find(d => d.value === selectedDateRange);
+  const currentType = reportTypes.find(t => t.value === selectedType);
 
   return (
     <div className="space-y-6">
@@ -49,22 +88,58 @@ export default function ReportsPage() {
               : 'Generated and scheduled reports'}
           </p>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <FileText className="w-4 h-4 mr-2" />
+        <Button 
+          onClick={handleCreateReport}
+          className="bg-teal-500 hover:bg-teal-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
           {language === 'ar' ? 'إنشاء تقرير' : 'Create Report'}
         </Button>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-3">
-        <Button variant="outline" className="bg-white">
-          <Calendar className="w-4 h-4 mr-2" />
-          {language === 'ar' ? 'التاريخ' : 'Date Range'}
-        </Button>
-        <Button variant="outline" className="bg-white">
-          <Filter className="w-4 h-4 mr-2" />
-          {language === 'ar' ? 'النوع' : 'Type'}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="bg-white">
+              <Calendar className="w-4 h-4 mr-2" />
+              {language === 'ar' ? currentDateRange?.labelAr : currentDateRange?.label}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {dateRanges.map((range) => (
+              <DropdownMenuItem 
+                key={range.value}
+                onClick={() => setSelectedDateRange(range.value)}
+                className="flex items-center justify-between"
+              >
+                {language === 'ar' ? range.labelAr : range.label}
+                {selectedDateRange === range.value && <Check className="w-4 h-4 ml-2 text-teal-500" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="bg-white">
+              <Filter className="w-4 h-4 mr-2" />
+              {language === 'ar' ? currentType?.labelAr : currentType?.label}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {reportTypes.map((type) => (
+              <DropdownMenuItem 
+                key={type.value}
+                onClick={() => setSelectedType(type.value)}
+                className="flex items-center justify-between"
+              >
+                {language === 'ar' ? type.labelAr : type.label}
+                {selectedType === type.value && <Check className="w-4 h-4 ml-2 text-teal-500" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Reports List */}
@@ -88,8 +163,21 @@ export default function ReportsPage() {
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">
-                <Download className="w-4 h-4" />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleDownload(report.id, language === 'ar' ? report.nameAr : report.name)}
+                disabled={downloadingId === report.id}
+                className="hover:bg-teal-50 hover:text-teal-600 hover:border-teal-200"
+              >
+                {downloadingId === report.id ? (
+                  <span className="animate-spin">⏳</span>
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                <span className="ml-2">
+                  {language === 'ar' ? 'تحميل' : 'Download'}
+                </span>
               </Button>
             </div>
           ))}
