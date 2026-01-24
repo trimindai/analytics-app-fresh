@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Upload,
@@ -23,6 +23,7 @@ import { mockDataSources } from '@/config/mockData';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const {
     language,
     currentProfileId,
@@ -41,6 +42,11 @@ export function Sidebar() {
     { icon: Lightbulb, label: t('insights'), href: '/dashboard/insights', badge: 12 },
     { icon: FileText, label: t('reports'), href: '/dashboard/reports' },
   ];
+
+  const handleDashboardClick = (dashboardId: string) => {
+    setCurrentDashboardId(dashboardId);
+    router.push('/dashboard');
+  };
 
   return (
     <>
@@ -61,12 +67,12 @@ export function Sidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-            <div className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">T</span>
               </div>
               <span className="font-heading font-semibold text-gray-900">Trimind Analytics</span>
-            </div>
+            </Link>
             <button
               onClick={() => setSidebarOpen(false)}
               className="p-1 hover:bg-gray-100 rounded lg:hidden"
@@ -119,10 +125,7 @@ export function Sidebar() {
                     return (
                       <button
                         key={dashboard.id}
-                        onClick={() => {
-                          setCurrentDashboardId(dashboard.id);
-                          window.location.href = `/dashboard`;
-                        }}
+                        onClick={() => handleDashboardClick(dashboard.id)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors w-full text-left ${
                           isActive
                             ? 'bg-teal-50 text-teal-600 font-medium border-l-2 border-teal-500'
