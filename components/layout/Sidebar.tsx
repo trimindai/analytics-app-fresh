@@ -114,21 +114,26 @@ export function Sidebar() {
               </button>
               {dashboardsExpanded && (
                 <div className="space-y-1">
-                  {profile?.dashboards.map((dashboard) => (
-                    <Link
-                      key={dashboard.id}
-                      href={`/dashboard/profile/${currentProfileId}/${dashboard.id}`}
-                      onClick={() => setCurrentDashboardId(dashboard.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        currentDashboardId === dashboard.id
-                          ? 'bg-teal-50 text-teal-600 font-medium border-l-2 border-teal-500'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                      {dashboard.id} {language === 'ar' ? dashboard.nameAr : dashboard.name}
-                    </Link>
-                  ))}
+                  {profile?.dashboards.map((dashboard) => {
+                    const isActive = currentDashboardId === dashboard.id;
+                    return (
+                      <button
+                        key={dashboard.id}
+                        onClick={() => {
+                          setCurrentDashboardId(dashboard.id);
+                          window.location.href = `/dashboard`;
+                        }}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors w-full text-left ${
+                          isActive
+                            ? 'bg-teal-50 text-teal-600 font-medium border-l-2 border-teal-500'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                        {dashboard.id} {language === 'ar' ? dashboard.nameAr : dashboard.name}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
